@@ -1,14 +1,11 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
+
 import 'package:image_picker/image_picker.dart';
-import 'package:mime/mime.dart';
+
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:path/path.dart';
 
@@ -20,13 +17,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   ProgressDialog pr;
   String _name;
-  String _contact;
+
   File _image;
   final GlobalKey<ScaffoldState> _scaffoldstate =
       new GlobalKey<ScaffoldState>();
   var name = TextEditingController();
-  var contact = TextEditingController();
-  var email = TextEditingController();
+
   String img =
       'https://git.unilim.fr/assets/no_group_avatar-4a9d347a20d783caee8aaed4a37a65930cb8db965f61f3b72a2e954a0eaeb8ba.png';
 
@@ -142,38 +138,7 @@ class _HomePageState extends State<HomePage> {
                               return null;
                             },
                           ),
-                          //===================================================== Emergency Contact
 
-                          Container(
-                            margin: EdgeInsets.only(top: 25),
-                            child: TextFormField(
-                              controller: contact,
-                              onChanged: ((String phone) {
-                                setState(() {
-                                  _contact = phone;
-                                  print(_contact);
-                                });
-                              }),
-                              decoration: InputDecoration(
-                                labelText: "Contact Number",
-                                labelStyle: TextStyle(
-                                  color: Colors.black87,
-                                ),
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                              ),
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.phone,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Please enter emergency contact number';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
                           //========================================================Button
 
                           Center(
@@ -227,9 +192,10 @@ class _HomePageState extends State<HomePage> {
                 isDefaultAction: true,
                 child: Column(
                   children: <Widget>[
-                    Image.asset(
-                      'assets/images/gallery.png',
-                      width: 50,
+                    Icon(
+                      Icons.image,
+                      size: 50,
+                      color: Colors.white,
                     ),
                     Text('Gallery'),
                   ],
@@ -242,9 +208,10 @@ class _HomePageState extends State<HomePage> {
                 isDefaultAction: true,
                 child: Column(
                   children: <Widget>[
-                    Image.asset(
-                      'assets/images/take_picture.png',
-                      width: 50,
+                    Icon(
+                      Icons.camera,
+                      size: 50,
+                      color: Colors.white,
                     ),
                     Text('Take Photo'),
                   ],
@@ -280,39 +247,68 @@ class _HomePageState extends State<HomePage> {
 
   //============================================================= API Area to upload image
   // Methode for file upload
-  Future<void> _uploadFile(filePath) async {
-    // Get base file name
-    String fileName = basename(filePath.path);
-    print("File base name: $fileName");
+  void _upload(File file) async {
+    String fileName = file.path.split('/').last;
+    print(fileName);
+    FormData data = FormData.fromMap({
+      "name": _name,
+      "photo": await MultipartFile.fromFile(
+        file.path,
+        filename: fileName,
+      ),
+    });
 
-    try {
-      FormData formData = new FormData.fromMap({
-        "name": _name,
-        "contact": _contact,
-        "file": await MultipartFile.fromFile(filePath, filename: fileName),
+    Dio dio = new Dio();
+    pr.show();
+    var token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkY2ViMjFjZjZmZTFjMDM5OGUzOGYyZiIsImlhdCI6MTU4NTg2MDExOCwiZXhwIjoxNTkzNjM2MTE4fQ.7EBfni8aoY4B6Q5Glgg1EpwAfeCnRDPdY6A4hkzyt-w';
+    dio.options.headers["Authorization"] = "Bearer " + token;
+    dio
+        .patch("http://10.0.2.2:3000/api/v1/users/updateMe",
+            data: data,
+            options: Options(
+              contentType: Headers.formUrlEncodedContentType,
+            ))
+        .then((response) {
+      setState(() {
+        pr.hide();
       });
-
-      Response response =
-          await Dio().post("http://192.168.0.101/saveFile.php", data: formData);
-      print("File upload response: $response");
-
-      // Show the incoming message in snakbar
-      pr.hide();
-      _showSnakBarMsg(response.data['message']);
-    } catch (e) {
-      print("Exception Caught: $e");
-    }
-  }
-
-  // Method for showing snak bar message
-  void _showSnakBarMsg(String msg) {
-    _scaffoldstate.currentState
-        .showSnackBar(new SnackBar(content: new Text(msg)));
+      print(response);
+    }).catchError((error) {
+      print(error);
+      setState(() {
+        pr.hide();
+      });
+    });
   }
 
   void _startUploading() async {
-    if (_image != null || _name != '' || _contact != '') {
-      await _uploadFile(_image);
+    if (_image != null || _name != '') {
+//      await _uploadFile(_image);
+      _upload(_image);
     }
   }
+
+//  Future<void> _uploadFile(file) async {
+//    // Get base file name
+//    String fileName = basename(file.path);
+//
+//    try {
+//      FormData formData = new FormData.fromMap({
+//        "name": _name,
+//        "photo": await MultipartFile.fromFile(file.path, filename: fileName),
+//      });
+//
+//      Response response = await Dio().patch(
+//          "http://10.0.2.2:3000/api/v1/users/updateMe",
+//          data: formData,
+//          options: Options(contentType: Headers.formUrlEncodedContentType));
+//      print("File upload response: $response");
+//
+//      // Show the incoming message in snakbar
+//
+//    } catch (e) {
+//      print("Exception Caught: $e");
+//    }
+//  }
 }
