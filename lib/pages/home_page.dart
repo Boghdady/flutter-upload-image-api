@@ -12,7 +12,6 @@ import 'package:mime/mime.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:path/path.dart';
 
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -22,24 +21,23 @@ class _HomePageState extends State<HomePage> {
   ProgressDialog pr;
   String _name;
   String _contact;
-  String _email;
   File _image;
- final GlobalKey<ScaffoldState> _scaffoldstate = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldstate =
+      new GlobalKey<ScaffoldState>();
   var name = TextEditingController();
   var contact = TextEditingController();
   var email = TextEditingController();
   String img =
       'https://git.unilim.fr/assets/no_group_avatar-4a9d347a20d783caee8aaed4a37a65930cb8db965f61f3b72a2e954a0eaeb8ba.png';
 
-      final _formKey = GlobalKey<FormState>();
-
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-        //============================================= loading dialoge
-        pr = new ProgressDialog(context, type: ProgressDialogType.Normal);
+    //============================================= loading dialoge
+    pr = new ProgressDialog(context, type: ProgressDialogType.Normal);
 
-           pr.style(
+    pr.style(
       message: 'Please wait...',
       borderRadius: 10.0,
       backgroundColor: Colors.white,
@@ -52,10 +50,12 @@ class _HomePageState extends State<HomePage> {
           color: Colors.black, fontSize: 19.0, fontWeight: FontWeight.w600),
     );
     return Scaffold(
+      key: _scaffoldstate,
       appBar: AppBar(
         title: Text('Edit Personal Info'),
       ),
-      body: SafeArea(child: Container(
+      body: SafeArea(
+        child: Container(
           color: Colors.white,
           child: Padding(
             padding: EdgeInsets.only(
@@ -86,7 +86,9 @@ class _HomePageState extends State<HomePage> {
                               radius: 50.0,
                             ),
                             InkWell(
-                              onTap:() {_onAlertPress(context);},
+                              onTap: () {
+                                _onAlertPress(context);
+                              },
                               child: Container(
                                   padding: EdgeInsets.all(5),
                                   decoration: BoxDecoration(
@@ -140,38 +142,6 @@ class _HomePageState extends State<HomePage> {
                               return null;
                             },
                           ),
-
-                          //========================================== Email Address
-                          Container(
-                            margin: EdgeInsets.only(top: 25),
-                            child: TextFormField(
-                              controller: email,
-                              onChanged: ((String email) {
-                                setState(() {
-                                  _email = email;
-                                  print(_email);
-                                });
-                              }),
-                              decoration: InputDecoration(
-                                labelText: "Email Address",
-                                labelStyle: TextStyle(
-                                  color: Colors.black87,
-                                ),
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                              ),
-                              textAlign: TextAlign.center,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Please enter email address';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-
                           //===================================================== Emergency Contact
 
                           Container(
@@ -239,12 +209,12 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-        ),),
+        ),
+      ),
     );
   }
 
-
-    //========================================================================== Funcions Area
+  //========================================================================== Funcions Area
 
   //========================= Gellary / Camera AlerBox
   void _onAlertPress(BuildContext context) async {
@@ -264,7 +234,9 @@ class _HomePageState extends State<HomePage> {
                     Text('Gallery'),
                   ],
                 ),
-                onPressed: (){getGalleryImage(context);},
+                onPressed: () {
+                  getGalleryImage(context);
+                },
               ),
               CupertinoDialogAction(
                 isDefaultAction: true,
@@ -277,7 +249,9 @@ class _HomePageState extends State<HomePage> {
                     Text('Take Photo'),
                   ],
                 ),
-                onPressed: () {getCameraImage(context);},
+                onPressed: () {
+                  getCameraImage(context);
+                },
               ),
             ],
           );
@@ -304,29 +278,26 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-    //============================================================= API Area to upload image
+  //============================================================= API Area to upload image
   // Methode for file upload
- Future<void> _uploadFile(filePath) async {
+  Future<void> _uploadFile(filePath) async {
     // Get base file name
     String fileName = basename(filePath.path);
     print("File base name: $fileName");
 
     try {
-      FormData formData =
-          new FormData.fromMap({
-            "name": _name,
-            "email": _email,
-            "contact": _contact,
-            "file": await MultipartFile.fromFile(filePath,filename:fileName),
-            }
-    );
+      FormData formData = new FormData.fromMap({
+        "name": _name,
+        "contact": _contact,
+        "file": await MultipartFile.fromFile(filePath, filename: fileName),
+      });
 
       Response response =
           await Dio().post("http://192.168.0.101/saveFile.php", data: formData);
       print("File upload response: $response");
 
       // Show the incoming message in snakbar
-       pr.hide();
+      pr.hide();
       _showSnakBarMsg(response.data['message']);
     } catch (e) {
       print("Exception Caught: $e");
@@ -339,10 +310,9 @@ class _HomePageState extends State<HomePage> {
         .showSnackBar(new SnackBar(content: new Text(msg)));
   }
 
-void _startUploading() async {
-    if (_image != null || _name != '' || _email != '' || _contact != '') {
-             await _uploadFile(_image);
-        }
- }
-   
+  void _startUploading() async {
+    if (_image != null || _name != '' || _contact != '') {
+      await _uploadFile(_image);
+    }
+  }
 }
