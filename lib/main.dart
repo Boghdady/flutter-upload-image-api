@@ -1,4 +1,4 @@
-import 'package:fluter_upload_image_api/pages/home_page.dart';
+import 'package:fluter_upload_image_api/pages/upload_single_img_page.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());

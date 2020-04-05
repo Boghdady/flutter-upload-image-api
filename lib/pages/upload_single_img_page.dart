@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:fluter_upload_image_api/pages/upload_multiple_and_single_img_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -161,6 +162,32 @@ class _HomePageState extends State<HomePage> {
                                   if (_formKey.currentState.validate()) {
                                     _startUploading();
                                   }
+                                },
+                              ),
+                            ),
+                          ),
+                          Center(
+                            child: Container(
+                              width: 300,
+                              margin: EdgeInsets.only(top: 20),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(25),
+                                  color: Colors.blue),
+                              child: FlatButton(
+                                child: FittedBox(
+                                    child: Text(
+                                  'Go To Upload Multiple Files',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 16),
+                                  textAlign: TextAlign.center,
+                                )),
+                                onPressed: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (_) =>
+                                              UploadMultipleAndSingleImagePage()));
                                 },
                               ),
                             ),
