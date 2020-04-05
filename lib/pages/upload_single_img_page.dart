@@ -277,7 +277,8 @@ class _HomePageState extends State<HomePage> {
   void _upload(File file) async {
     String fileName = file.path.split('/').last;
     print(fileName);
-    FormData data = FormData.fromMap({
+
+    FormData formData = FormData.fromMap({
       "name": _name,
       "photo": await MultipartFile.fromFile(
         file.path,
@@ -289,24 +290,34 @@ class _HomePageState extends State<HomePage> {
     pr.show();
     var token =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkY2ViMjFjZjZmZTFjMDM5OGUzOGYyZiIsImlhdCI6MTU4NTg2MDExOCwiZXhwIjoxNTkzNjM2MTE4fQ.7EBfni8aoY4B6Q5Glgg1EpwAfeCnRDPdY6A4hkzyt-w';
-    dio.options.headers["Authorization"] = "Bearer " + token;
-    dio
-        .patch("http://10.0.2.2:3000/api/v1/users/updateMe",
-            data: data,
-            options: Options(
-              contentType: Headers.formUrlEncodedContentType,
-            ))
-        .then((response) {
+//    dio.options.headers["Authorization"] = "Bearer " + token;
+    try {
+      Response response =
+          await dio.patch("http://10.0.2.2:3000/api/v1/users/updateMe",
+              data: formData,
+              options: Options(
+                contentType: Headers.formUrlEncodedContentType,
+                headers: {
+                  'Authorization': 'Bearer $token',
+                },
+              ));
+      print(response.data);
       setState(() {
         pr.hide();
       });
-      print(response);
-    }).catchError((error) {
-      print(error);
-      setState(() {
-        pr.hide();
-      });
-    });
+    } on DioError catch (e) {
+      if (e.response != null) {
+        print(e.response.data);
+        print(e.response.headers);
+        print(e.response.request);
+        setState(() => pr.hide());
+      } else {
+        // Something happened in setting up or sending the request that triggered an Error
+        print(e.request);
+        print(e.message);
+        setState(() => pr.hide());
+      }
+    }
   }
 
   void _startUploading() async {

@@ -1,7 +1,8 @@
 import 'dart:io';
-
+import 'dart:convert' as convert;
 import 'package:dio/dio.dart';
 import 'package:dio/dio.dart';
+import 'package:fluter_upload_image_api/utils/exceptions.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -427,21 +428,35 @@ class _UploadMultipleAndSingleImagePageState
     pr.show();
     var token =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVjOGExZDViMDE5MGIyMTQzNjBkYzA1NyIsImlhdCI6MTU4NTk3MjI2NSwiZXhwIjoxNTkzNzQ4MjY1fQ.KtPYhS2r1nfxvmiEFlYPM61F1TcSKAImEmZoVH20l6U';
-    dio.options.headers["Authorization"] = "Bearer " + token;
+//    dio.options.headers["Authorization"] = "Bearer " + token;
     try {
       Response response = await dio.patch(
         "http://10.0.2.2:3000/api/v1/tours/5e876a32f18bb9e17fc62791",
         data: await formData(),
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
       );
-      print(response);
+      print(response.data);
       setState(() {
         pr.hide();
       });
-    } catch (err) {
-      print(err);
-      setState(() {
-        pr.hide();
-      });
+//      var data = response.data['data'];
+
+    } on DioError catch (e) {
+      if (e.response != null) {
+        print(e.response.data);
+        print(e.response.headers);
+        print(e.response.request);
+        setState(() => pr.hide());
+      } else {
+        // Something happened in setting up or sending the request that triggered an Error
+        print(e.request);
+        print(e.message);
+        setState(() => pr.hide());
+      }
     }
   }
 
